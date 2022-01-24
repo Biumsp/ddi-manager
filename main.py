@@ -36,10 +36,11 @@ if __name__ == '__main__':
                            ["info about this command", "info about this command",
                             "change loglevel to INFO", "change loglevel to INFO"])
 
-    dispatcher.add_handler("send", send, ["-h", "--help", "-i", "--info", "-a", "--all"],
+    dispatcher.add_handler("send", send, ["-h", "--help", "-i", "--info", "-f", "--force", "-a", "--all"],
                            "notify the teachers of the DDI students in their classrooms",
                            ["info about this command", "info about this command",
                             "change loglevel to INFO", "change loglevel to INFO",
+                            "send again the latest update", "send again the latest update",
                             "send the email to all the teachers", "send the email to all the teachers"])
 
     dispatcher.add_handler("status", status, ["-h", "--help", "-i", "--info", "-f", "--file", "-d", "--detailed"], 
