@@ -45,11 +45,14 @@ http_handler.setTelegramChatId(TELEGRAM_CHATID)
 
 # Logging settings -----------------------------------
 
-log_level = logging.ERROR
-logging.basicConfig(format=CMDFORMAT, datefmt=DATEFORMAT, level=log_level)
+log_level_default = logging.ERROR
+log_level_info    = logging.INFO
+logging.basicConfig(format=CMDFORMAT, datefmt=DATEFORMAT, level=log_level_default)
 
 
 # Create logger instance -----------------------------------
 
 logger = logging.getLogger(APPNAME)
 logger.addHandler(http_handler) 
+
+ERROR, OK = 1, 0

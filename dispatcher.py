@@ -19,9 +19,9 @@ class Dispatcher():
                                     "opts": opts, 
                                     "info": info, 
                                     "opts_info": opts_info} })
-                                    
 
-    def dispatch(self, cmd, args, opts):
+
+    def dispatch(self, cmd, args, opts, database):
         if cmd not in self.handlers:
             self._invalid_cmd(cmd)
             return
@@ -32,7 +32,7 @@ class Dispatcher():
                 return
 
         handler = self.handlers[cmd]["handler"]
-        handler(args, opts)
+        handler(args, opts, database)
 
 
     def _invalid_cmd(self, cmd):
@@ -55,15 +55,18 @@ class Dispatcher():
 
 dispatcher = Dispatcher()
 
-dispatcher.add_handler("update", update, ["-h", "--help", "-i", "--info"], "update the local database",
+dispatcher.add_handler("update", update, ["-h", "--help", "-i", "--info"], 
+                        "update the local database",
                         ["info about this command", "info about this command",
                         "change loglevel to INFO", "change loglevel to INFO"])
 
-dispatcher.add_handler("push", push, ["-h", "--help", "-i", "--info"], "push changes to the remote database",
+dispatcher.add_handler("push", push, ["-h", "--help", "-i", "--info"],
+                        "push changes to the remote database",
                         ["info about this command", "info about this command",
                         "change loglevel to INFO", "change loglevel to INFO"])
 
-dispatcher.add_handler("pull", pull, ["-h", "--help", "-i", "--info"], "pull changes from the remote database",
+dispatcher.add_handler("pull", pull, ["-h", "--help", "-i", "--info"], 
+                        "pull changes from the remote database",
                         ["info about this command", "info about this command",
                         "change loglevel to INFO", "change loglevel to INFO"])
 

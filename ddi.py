@@ -1,5 +1,5 @@
 from colorout import red, green, blue
-from logging_setup import logger, log_level
+from logging_setup import logger, log_level_default
 from dispatcher import dispatcher
 from getpass import getpass
 from authentication import authenticate
@@ -28,15 +28,18 @@ if __name__ == '__main__':
 
     # -------------------------------------------
 
+    # Load database
+    database = Database("database\\")
+
     # Main Loop ---------------------------------
     while 1:
         # Reset the logging level
-        logger.setLevel(log_level)
+        logger.setLevel(log_level_default)
 
         # Get the user input
         inps  = input(blue(">> ")).split()
         if inps:
             cmd, args, opts = unpack_input(inps)
-            dispatcher.dispatch(cmd, args, opts)
+            dispatcher.dispatch(cmd, args, opts, database)
 
     # -------------------------------------------
