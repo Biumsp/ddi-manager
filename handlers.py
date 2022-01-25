@@ -5,8 +5,8 @@ def pull(args, opts, database):
 
     # Help --------------------------------------------------------------------
     if "-h" in opts or "--help" in opts:
-        message  = "update the local data using the remote ones:"
-        message += "\nuse this command before making any change to the local excel files" 
+        message  = "update the local database using the remote one:"
+        message += "\nuse this command before sending the updates to the teachers" 
         print(message)
         return
     # -------------------------------------------------------------------------
@@ -29,8 +29,8 @@ def update(args, opts, database):
 
     # Help --------------------------------------------------------------------
     if "-h" in opts or "--help" in opts:
-        message  = "update the local database:"
-        message += "\nuse this command after any change to the local excel files" 
+        message  = "save the modified version and add it to the local database:"
+        message += "\nuse this command after any change" 
         print(message)
         return
     # -------------------------------------------------------------------------
@@ -56,7 +56,7 @@ def push(args, opts, database):
     # Help --------------------------------------------------------------------
     if "-h" in opts or "--help" in opts:
         message  = "push the local changes to the remote database:"
-        message += "\nuse this command after any local change" 
+        message += "\nuse this command after any local update" 
         print(message)
         return
     # -------------------------------------------------------------------------
@@ -80,7 +80,7 @@ def send(args, opts, database):
     # Help --------------------------------------------------------------------
     if "-h" in opts or "--help" in opts:
         message  = "notify the teachers about the changes in their classrooms:"
-        message += "\nuse this command after 'update' and before 'push'" 
+        message += "\nuse this command after 'update' or 'push'" 
         print(message)
         return
     # -------------------------------------------------------------------------
@@ -105,7 +105,7 @@ def status(args, opts, database):
     # Help --------------------------------------------------------------------
     if "-h" in opts or "--help" in opts:
         message  = "get an overview of the current DDI status:"
-        message += "\nuse this command to get all the insights about the data" 
+        message += "\nuse this command to get some insights about the data" 
         print(message)
         return
     # -------------------------------------------------------------------------
@@ -137,7 +137,7 @@ def restore(args, opts, database):
 
     # Help --------------------------------------------------------------------
     if "-h" in opts or "--help" in opts:
-        message  = "restores the version corresponding to the last local database:"
+        message  = "restores the last version present in the local database:"
         message += "\nuse this to discard unwanted changes"
         print(message)
         return
