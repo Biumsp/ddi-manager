@@ -1,3 +1,6 @@
+from handlers import update, push, pull, send, status, check, restore
+from logging_setup import logger
+
 class Dispatcher():
     def __init__(self):
         self.handlers = {}
@@ -16,6 +19,7 @@ class Dispatcher():
                                     "opts": opts, 
                                     "info": info, 
                                     "opts_info": opts_info} })
+                                    
 
     def dispatch(self, cmd, args, opts):
         if cmd not in self.handlers:
@@ -32,7 +36,7 @@ class Dispatcher():
 
 
     def _invalid_cmd(self, cmd):
-        print(f"ERROR - invalid command {cmd}\n")
+        logger.error(f"invalid command {cmd}\n")
 
         print("The available commands are:\n")
         for c in self.handlers.keys():
@@ -41,9 +45,47 @@ class Dispatcher():
 
     
     def _invalid_opt(self, cmd, opt):
-        print(f"ERROR - invalid option {opt} for command {cmd}\n")
+        logger.error(f"invalid option {opt} for command {cmd}\n")
 
         print(f"The available options for {cmd} are:\n")
         for opt, info in zip(self.handlers[cmd]["opts"], self.handlers[cmd]["opts_info"]):
             print(f"{opt:9} {info}")
         print()
+
+
+dispatcher = Dispatcher()
+
+dispatcher.add_handler("update", update, ["-h", "--help", "-i", "--info"], "update the local database",
+                        ["info about this command", "info about this command",
+                        "change loglevel to INFO", "change loglevel to INFO"])
+
+dispatcher.add_handler("push", push, ["-h", "--help", "-i", "--info"], "push changes to the remote database",
+                        ["info about this command", "info about this command",
+                        "change loglevel to INFO", "change loglevel to INFO"])
+
+dispatcher.add_handler("pull", pull, ["-h", "--help", "-i", "--info"], "pull changes from the remote database",
+                        ["info about this command", "info about this command",
+                        "change loglevel to INFO", "change loglevel to INFO"])
+
+dispatcher.add_handler("send", send, ["-h", "--help", "-i", "--info", "-f", "--force", "-a", "--all"],
+                        "notify the teachers of the DDI students in their classrooms",
+                        ["info about this command", "info about this command",
+                        "change loglevel to INFO", "change loglevel to INFO",
+                        "send again the latest update", "send again the latest update",
+                        "send the email to all the teachers", "send the email to all the teachers"])
+
+dispatcher.add_handler("status", status, ["-h", "--help", "-i", "--info", "-f", "--file", "-d", "--detailed"], 
+                        "return the DDI overall status",
+                        ["info about this command", "info about this command",
+                        "change loglevel to INFO", "change loglevel to INFO",
+                        "save the output to a file", "save the output to a file",
+                        "show all details", "show all details"])
+
+dispatcher.add_handler("check", check, ["-h", "--help", "-i", "--info"], "check if the names match",
+                        ["info about this command", "info about this command",
+                        "change loglevel to INFO", "change loglevel to INFO"])
+
+dispatcher.add_handler("restore", restore, ["-h", "--help", "-i", "--info"], 
+                        "restore a specific state from the database",
+                        ["info about this command", "info about this command",
+                        "change loglevel to INFO", "change loglevel to INFO"])
