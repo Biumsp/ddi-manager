@@ -1,4 +1,13 @@
+from getpass import getpass
+
 USERS = {"bus": "111"}
 
-def authenticate(username, password):
-    return (username in USERS and password == USERS[username])
+def authenticate():
+    while 1:
+        username = input("Username: ")
+        password = getpass()
+
+        if (username in USERS and password == USERS[username]):
+            break
+        else:
+            logger.error("wrong credentials\n")

@@ -17,7 +17,8 @@ class Database():
         self.updated = 1
         self.pushed  = 0
         self.sent    = 0
-
+        self.user = ''
+        
         if file_name:
             # Load specified version
             error = self.get_version(filename)
@@ -28,9 +29,14 @@ class Database():
             return ERROR     
 
          
+    def set_user(self, user):
+        self.user = user
+
+
     def just_pulled(self):
         self.pulled = 1
         self.get_last_local_version()
+
 
     def just_updated(self):
         self.updated = 1
@@ -126,20 +132,36 @@ class Database():
         pass
 
 
+    def get_payload(self):
+        """Returns the dict to store in the file"""
+
+        id, error = self.get_time()
+        if error:
+            return None, ERROR
+
+        error = self.merge_changes()
+        if error:
+            return None, ERROR
+
+        # id
+        # sent (self.sent)
+        # author (self.user)
+        # teachers    [alphabetically ordered]
+        # classes (?) [alphabetically ordered]
+        # ddi         [alphabetically ordered]
+
+        return {}, OK
+
     def update(self):
         """Updates the local database history"""
 
         try:
-            id, error = self.get_time()
-            if error:
-                return ERROR
-
-            error = self.merge_changes()
+            pl, error = self.get_payload()
             if error:
                 return ERROR
 
             with open(self.path + id + ".json", "w") as file:
-                file.write(dumps(self.data()))
+                file.write(dumps(pl))
             
             print(f"Updated to version {self.id}\n")
             self.just_updated()

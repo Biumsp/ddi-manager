@@ -1,7 +1,6 @@
 from colorout import red, green, blue
 from logging_setup import logger, log_level_default
 from dispatcher import dispatcher
-from getpass import getpass
 from authentication import authenticate
 from sys import argv
 
@@ -17,19 +16,13 @@ def unpack_input(inps):
 if __name__ == '__main__':
 
     # Authentication ---------------------------
-    while 1:
-        username = input("Username: ")
-        password = getpass()
-
-        if authenticate(username, password):
-            break
-        else:
-            logger.error("wrong credentials\n")
+    user = authenticate()
 
     # -------------------------------------------
 
     # Load database
     database = Database("database\\")
+    database.set_user(user)
 
     # Main Loop ---------------------------------
     while 1:
