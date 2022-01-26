@@ -1,4 +1,4 @@
-from handlers import update, push, pull, send, status, check, restore
+from handlers import update, push, pull, send, status, restore, add, remove, list_class, test, get_state
 from logging_setup import logger
 
 class Dispatcher():
@@ -94,7 +94,8 @@ dispatcher.add_handler("status", status, ["-h", "--help", "-i", "--info", "-f", 
                         "save the output to a file", "save the output to a file",
                         "show all details", "show all details"])
 
-dispatcher.add_handler("check", check, ["-h", "--help", "-i", "--info"], "check if the names match",
+dispatcher.add_handler("test", test, ["-h", "--help", "-i", "--info"], 
+                        "checks the internal structure",
                         ["info about this command", "info about this command",
                         "change loglevel to INFO", "change loglevel to INFO"])
 
@@ -107,3 +108,7 @@ dispatcher.add_handler("list", list_class, ["-h", "--help", "-i", "--info"],
                         "list the students of a class",
                         ["info about this command", "info about this command",
                         "change loglevel to INFO", "change loglevel to INFO"])
+
+
+
+dispatcher.add_handler("state", get_state)

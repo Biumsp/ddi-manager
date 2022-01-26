@@ -1,5 +1,5 @@
 import colorama
-from colorama import Fore, Style
+from colorama import Fore, Style, Back
 
 RED   = Fore.RED
 GREEN = Fore.GREEN

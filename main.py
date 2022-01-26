@@ -1,9 +1,8 @@
-from colorout import red, green, blue
 from logging_setup import logger, log_level_default
 from dispatcher import dispatcher
+from database import Database
 from authentication import authenticate
 from sys import argv
-
 
 def unpack_input(inps):
     cmd = inps[0]
@@ -16,7 +15,8 @@ def unpack_input(inps):
 if __name__ == '__main__':
 
     # Authentication 
-    user = authenticate()
+    #user = authenticate()
+    user = "bus"
 
     # Load database
     database = Database("database\\")
@@ -28,7 +28,7 @@ if __name__ == '__main__':
         logger.setLevel(log_level_default)
 
         # Get the user input
-        inps  = input(blue(">> ")).split()
+        inps  = input(">> ").split()
         if inps:
             cmd, args, opts = unpack_input(inps)
             dispatcher.dispatch(cmd, args, opts, database)

@@ -1,7 +1,6 @@
 from logging_setup import logger, ERROR, OK
 from json import loads, dumps
 from datetime import datetime
-from colorout import blue, green, red
 import os
 
 
@@ -21,7 +20,7 @@ class Database():
         
         if file_name:
             # Load specified version
-            error = self.get_version(filename)
+            error = self.get_version(file_name)
         else:
             # Load latest version
             error = self.get_last_local_version()
@@ -53,7 +52,10 @@ class Database():
         self.data["sent"] = 1
 
 
-    def just_changed(self):
+    def just_added(self):
+        self.updated = 0
+
+    def just_removed(self):
         self.updated = 0
 
 
@@ -67,7 +69,7 @@ class Database():
     
     def get_version(self, filename):
         try:
-            with open(path + filename + ".json", "r") as file:
+            with open(self.path + filename, "r") as file:
                 v = loads(file.read()) 
 
             self.data = v
@@ -78,7 +80,7 @@ class Database():
                 self.sent = 1
 
         except FileNotFoundError:
-            logging.critical(f"invalid name {v} for local database")
+            logger.critical(f"invalid name {filename} for local database")
             return ERROR
 
 
@@ -87,7 +89,7 @@ class Database():
             v = str(max([int(x.split(".")[0]) for x in os.listdir(self.path)]))
 
             try:
-                with open(path + v + ".json", "r") as file:
+                with open(self.path + v + ".json", "r") as file:
                     v = loads(file.read()) 
 
                 self.data = v
@@ -99,11 +101,11 @@ class Database():
 
 
             except FileNotFoundError:
-                logging.critical(f"invalid name {v} for local database")
+                logger.critical(f"invalid name {v} for local database")
                 return ERROR
 
         except FileNotFoundError:
-            logging.critical(f"directory {path} is non-existent")
+            logger.critical(f"directory {path} is non-existent")
             return ERROR   
 
 
@@ -118,18 +120,20 @@ class Database():
 
         elif s in self.changes["remove"]:
             self.changes["remove"].remove(s)
-            logging.info(f"reverting the action 'remove -n {s[0]} -c {s[1]}'")
+            logger.info(f"reverting the action 'remove -n {s[0]} -c {s[1]}'")
             
 
         else:
             self.changes["add"].append(s)
-            logging.info(f"adding the student {s[0]} - {s[1]}")
+            logger.info(f"adding the student {s[0]} - {s[1]}")
+
+        self.just_added()
             
         
     def remove(self, s):
         if s not in self.changes["add"]:
             self.changes["add"].remove(s)
-            logging.info(f"reverting the action 'add -n {s[0]} -c {s[1]}'")
+            logger.info(f"reverting the action 'add -n {s[0]} -c {s[1]}'")
             
 
         elif s not in self.data["ddi"]:
@@ -142,7 +146,9 @@ class Database():
 
         else:
             self.changes["remove"].append(s)
-            logging.info(f"removing the student {s[0]} - {s[1]}")
+            logger.info(f"removing the student {s[0]} - {s[1]}")
+
+        self.just_removed()
             
 
     def merge_changes(self):
@@ -172,7 +178,7 @@ class Database():
         files = os.listdir(self.path)
         files.sort(key=lambda x: int(x.split(".")[0]), reverse=True)
 
-        for file in :
+        for file in files:
             last_sent_version = Database(self.path, file)
             if last_sent_version.sent:
                 break
@@ -234,14 +240,14 @@ class Database():
             self.just_updated()
 
         except FileNotFoundError:
-            logging.critical(f"invalid name {v} for local database")
+            logger.critical(f"invalid name {v} for local database")
             return ERROR
 
     
     def send(self):
         """Sends the emails"""
 
-        changes, error = get_changes_from_last_sent()
+        changes, error = self.get_changes_from_last_sent()
         if error:
             return ERROR
 
@@ -297,13 +303,17 @@ class Database():
             return ERROR
         
         else:
-            message  = f"class {c}:\n"
+            message  = f"\nclass {c}:\n"
             self.data["classes"][c]["students"].sort()
+            self.data["classes"][c]["teachers"].sort()
+
+            spaces = max(len(name) for name in self.data["classes"][c]["students"])
 
             for s in self.data["classes"][c]["students"]:
-                message += f"+ {s:22}" + (s in self.data["ddi"])*" - DDI" + "\n"
+                message += "+ {:^{spaces}}".format(s, spaces=spaces) 
+                message += (s+"-"+c in self.data["ddi"])*" - DDI" + "\n"
             
-            message += "teachers"
+            message += "\nteachers:\n"
             for t in self.data["classes"][c]["teachers"]:
                 message += f"+ {t:22}\n" 
                 
@@ -313,11 +323,7 @@ class Database():
     def check_state(self, s: int):
         """Check if you can perform the action s on the basis of the states"""
 
-        if not self.pulled:
-            logger.warning(f"you have to {blue('pull')} first")
-            return True, OK
-
-        elif s == "pull":
+        if s == "pull":
             # You can always pull
             return False, OK
 
@@ -350,7 +356,7 @@ class Database():
                 else:
                     return False, OK
             else:
-                logger.warning(f"you have to {blue('update')} first")
+                logger.warning(f"you have to update first")
                 return True, OK
             
         elif s == "send":
@@ -363,10 +369,10 @@ class Database():
                     else:
                         return False, OK
                 else:
-                    logger.warning(f"you have to {blue('update')} first")
+                    logger.warning(f"you have to update first")
                     return True, OK
             else:
-                logger.warning(f"you have to {blue('pull')} first")
+                logger.warning(f"you have to pull first")
                 return True, OK
         
         elif s == "restore":

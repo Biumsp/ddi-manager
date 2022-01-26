@@ -1,4 +1,5 @@
 from getpass import getpass
+from logging_setup import logger
 
 USERS = {"bus": "111"}
 
