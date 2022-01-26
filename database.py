@@ -12,7 +12,7 @@ class Database():
         self.path = path
         self.id   = 0
         self.data = {}
-        self.changes = {}
+        self.changes = {"add": [], "remove": []}
         self.pulled  = 0
         self.updated = 1
         self.pushed  = 0
@@ -75,9 +75,7 @@ class Database():
 
             # Update the state
             if self.data["sent"]:
-                self.state = STATE_SEND
-
-            return OK
+                self.sent = 1
 
         except FileNotFoundError:
             logging.critical(f"invalid name {v} for local database")
@@ -99,7 +97,6 @@ class Database():
                 if self.data["sent"]:
                     self.sent = 1
 
-                return OK
 
             except FileNotFoundError:
                 logging.critical(f"invalid name {v} for local database")
@@ -108,28 +105,91 @@ class Database():
         except FileNotFoundError:
             logging.critical(f"directory {path} is non-existent")
             return ERROR   
+
+
+    def add(self, s):
+        if s in self.data["ddi"]:
+            logger.error(f"the student {s} is already in the list")
+            return ERROR
+
+        elif s in self.changes["add"]:
+            logger.error(f"the student {s} was already added")
+            return ERROR
+
+        elif s in self.changes["remove"]:
+            self.changes["remove"].remove(s)
+            logging.info(f"reverting the action 'remove -n {s[0]} -c {s[1]}'")
+            
+
+        else:
+            self.changes["add"].append(s)
+            logging.info(f"adding the student {s[0]} - {s[1]}")
+            
         
+    def remove(self, s):
+        if s not in self.changes["add"]:
+            self.changes["add"].remove(s)
+            logging.info(f"reverting the action 'add -n {s[0]} -c {s[1]}'")
+            
+
+        elif s not in self.data["ddi"]:
+            logger.error(f"the student {s[0]} - {s[1]} cannot be removed: is not in the list")
+            return ERROR
+            
+        elif s in self.changes["remove"]:
+            logger.error(f"the student {s[0]} - {s[1]} was already removed")
+            return ERROR
+
+        else:
+            self.changes["remove"].append(s)
+            logging.info(f"removing the student {s[0]} - {s[1]}")
+            
 
     def merge_changes(self):
         """Merges the changes dict with the data dict (applies the pending changes)"""
 
         # create a temporary merged dict, check if it's consistent.
         # If it is, update self.data
-        return OK
 
-    def check_consistency(self, tmp_data):
-        """Check if the data resulting from the changes are consistent:
-           Prompt the inconsistency if they are not"""
-        return OK
+        tmp = {"teachers": self.data["teachers"], "classes": self.data["classes"], "ddi": {}}
 
+        # Changes in the ddi-students' list
+        for s in self.data["ddi"]:
+            if s not in self.changes["remove"]:
+                tmp["ddi"].append(s)
+
+        for s in self.changes["add"]:
+            tmp["ddi"].append(s)
+
+        self.data = tmp
+        
     
     def get_changes_from_last_sent(self):
         """Gets the changes between the last updated version (since you
         can't have called send() without first update()) and the last
-        sent update (because this method is called from send(), so 
-        these are the changes we need to notify: those we didn't notify
-        before (those from the last time we notified)"""
-        pass
+        sent update"""
+
+        files = os.listdir(self.path)
+        files.sort(key=lambda x: int(x.split(".")[0]), reverse=True)
+
+        for file in :
+            last_sent_version = Database(self.path, file)
+            if last_sent_version.sent:
+                break
+
+        lsvddi = last_sent_version.data["ddi"]
+        nowddi = self.data["ddi"]
+
+        diff = []
+        for c in list(lsvddi.keys()):
+            if c not in list(nowddi.keys()) or set(nowddi[c]) != set(lsvddi[c]):
+                diff.append(c)
+        
+        for c in list(nowddi.keys()):
+            if c not in list(lsvddi.keys()):
+                diff.append(c)
+
+        return diff, OK
 
 
     def get_payload(self):
@@ -143,14 +203,21 @@ class Database():
         if error:
             return None, ERROR
 
-        # id
-        # sent (self.sent)
-        # author (self.user)
-        # teachers    [alphabetically ordered]
-        # classes (?) [alphabetically ordered]
-        # ddi         [alphabetically ordered]
+        id, error = get_time()
+        if error:
+            return None, ERROR
 
-        return {}, OK
+        self.id = id
+
+        payload = {"id": self.id,
+                   "sent": self.sent,
+                   "author": self.user,
+                   "teachers": self.data["teachers"],
+                   "classes": self.data["classes"],
+                   "ddi": self.data["ddi"]}
+
+        return payload, OK
+
 
     def update(self):
         """Updates the local database history"""
@@ -160,13 +227,11 @@ class Database():
             if error:
                 return ERROR
 
-            with open(self.path + id + ".json", "w") as file:
+            with open(self.path + self.id + ".json", "w") as file:
                 file.write(dumps(pl))
             
             print(f"Updated to version {self.id}\n")
             self.just_updated()
-
-            return OK
 
         except FileNotFoundError:
             logging.critical(f"invalid name {v} for local database")
@@ -176,7 +241,12 @@ class Database():
     def send(self):
         """Sends the emails"""
 
-        # BODY
+        changes, error = get_changes_from_last_sent()
+        if error:
+            return ERROR
+
+        print("sent")
+        print(changes)
         
         self.just_sent()
         self.update()
@@ -185,17 +255,14 @@ class Database():
 
     def push(self):
         """Pushes the local database history to the drive"""
-
-        # BODY
-
+        print("push")
         self.just_pushed()
 
 
     def pull(self):
         """Pulls the database history from the drive"""
 
-        # BODY
-
+        print("pull")
         self.just_pulled()
 
     
@@ -224,6 +291,25 @@ class Database():
             return None, ERROR
 
 
+    def list_class(self, c):
+        if c not in self.data["classes"]:
+            logger.error(f"the class {c} is non-existent")
+            return ERROR
+        
+        else:
+            message  = f"class {c}:\n"
+            self.data["classes"][c]["students"].sort()
+
+            for s in self.data["classes"][c]["students"]:
+                message += f"+ {s:22}" + (s in self.data["ddi"])*" - DDI" + "\n"
+            
+            message += "teachers"
+            for t in self.data["classes"][c]["teachers"]:
+                message += f"+ {t:22}\n" 
+                
+            print(message)
+
+
     def check_state(self, s: int):
         """Check if you can perform the action s on the basis of the states"""
 
@@ -233,7 +319,19 @@ class Database():
 
         elif s == "pull":
             # You can always pull
-            return False, OK 
+            return False, OK
+
+        elif s == "add":
+             # You can always add
+            return False, OK
+
+        elif s == "remove":
+             # You can always remove
+            return False, OK
+        
+        elif s == "list":
+             # You can always list
+            return False, OK
         
         elif s == "update":
             # You can update only if you just made changes

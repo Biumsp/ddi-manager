@@ -55,6 +55,21 @@ class Dispatcher():
 
 dispatcher = Dispatcher()
 
+dispatcher.add_handler("pull", pull, ["-h", "--help", "-i", "--info"], 
+                        "pull changes from the remote database",
+                        ["info about this command", "info about this command",
+                        "change loglevel to INFO", "change loglevel to INFO"])
+
+dispatcher.add_handler("add", add, ["-h", "--help", "-i", "--info"], 
+                        "add a student to the list of DDI students",
+                        ["info about this command", "info about this command",
+                        "change loglevel to INFO", "change loglevel to INFO"])
+
+dispatcher.add_handler("remove", remove, ["-h", "--help", "-i", "--info"], 
+                        "remove a student from the list of DDI students",
+                        ["info about this command", "info about this command",
+                        "change loglevel to INFO", "change loglevel to INFO"])
+
 dispatcher.add_handler("update", update, ["-h", "--help", "-i", "--info"], 
                         "update the local database",
                         ["info about this command", "info about this command",
@@ -62,11 +77,6 @@ dispatcher.add_handler("update", update, ["-h", "--help", "-i", "--info"],
 
 dispatcher.add_handler("push", push, ["-h", "--help", "-i", "--info"],
                         "push changes to the remote database",
-                        ["info about this command", "info about this command",
-                        "change loglevel to INFO", "change loglevel to INFO"])
-
-dispatcher.add_handler("pull", pull, ["-h", "--help", "-i", "--info"], 
-                        "pull changes from the remote database",
                         ["info about this command", "info about this command",
                         "change loglevel to INFO", "change loglevel to INFO"])
 
@@ -90,5 +100,10 @@ dispatcher.add_handler("check", check, ["-h", "--help", "-i", "--info"], "check 
 
 dispatcher.add_handler("restore", restore, ["-h", "--help", "-i", "--info"], 
                         "restore a specific state from the database",
+                        ["info about this command", "info about this command",
+                        "change loglevel to INFO", "change loglevel to INFO"])
+
+dispatcher.add_handler("list", list_class, ["-h", "--help", "-i", "--info"], 
+                        "list the students of a class",
                         ["info about this command", "info about this command",
                         "change loglevel to INFO", "change loglevel to INFO"])
