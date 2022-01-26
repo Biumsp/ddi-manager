@@ -15,10 +15,8 @@ def unpack_input(inps):
 
 if __name__ == '__main__':
 
-    # Authentication ---------------------------
+    # Authentication 
     user = authenticate()
-
-    # -------------------------------------------
 
     # Load database
     database = Database("database\\")

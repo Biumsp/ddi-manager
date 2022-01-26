@@ -11,3 +11,5 @@ def authenticate():
             break
         else:
             logger.error("wrong credentials\n")
+    
+    return username
